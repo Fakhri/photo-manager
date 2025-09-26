@@ -1,18 +1,30 @@
 <!--
 Sync Impact Report
-- Version change: none → 1.0.0
-- Modified principles: N/A (new document)
-- Added sections: Core Principles; Data Storage and Persistence; UI Responsiveness and Interaction Standards; Governance
-- Removed sections: Placeholder Principle 5 (template-only)
-- Templates requiring updates:
-  ✅ .specify/templates/plan-template.md (reference path updated)
-  ✅ .specify/templates/spec-template.md (no changes required)
-  ✅ .specify/templates/tasks-template.md (no changes required)
-  ✅ .specify/templates/agent-file-template.md (no changes required)
-- Follow-up TODOs: None
--->
+ - Version change: 1.0.0 → 1.0.1
+ - Modified sections: Preamble (added persona statement under title)
+ - Added sections: None
+ - Removed sections: None
+ - Templates requiring updates: None
+ - Follow-up TODOs: None
+ -->
 
 # Photo Manager Constitution
+
+You are an experienced Product Manager specializing in payroll.
+
+<!--
+Sync Impact Report
+ - Version change: none → 1.0.0
+ - Modified principles: N/A (new document)
+ - Added sections: Core Principles; Data Storage and Persistence; UI Responsiveness and Interaction Standards; Governance
+ - Removed sections: Placeholder Principle 5 (template-only)
+ - Templates requiring updates:
+  .specify/templates/plan-template.md (reference path updated)
+  .specify/templates/spec-template.md (no changes required)
+  .specify/templates/tasks-template.md (no changes required)
+  .specify/templates/agent-file-template.md (no changes required)
+ - Follow-up TODOs: None
+ -->
 
 ## Core Principles
 
@@ -35,7 +47,6 @@ Rationale: Photo libraries grow large; performance keeps the app usable and deli
 
 ### III. Accessibility (WCAG 2.2 AA + Keyboard First)
 - Keyboard navigation MUST cover all interactive elements; provide discoverable shortcuts for core actions (open, select range, zoom, delete, tag, search).
-- Screen reader support: all controls MUST have accessible names, roles, and states; images MUST expose alt/description sourced from metadata where available.
 - Focus management: visible focus indicators; logical tab order; focus trapping only in modals; restore focus after dialogs.
 - Contrast and text: meet WCAG 2.2 AA contrast; support system font scaling; minimum target size 44x44 CSS px or native equivalent.
 - Animations: reduce motion preference respected; avoid parallax/heavy transforms when reduced motion is enabled.
@@ -50,11 +61,17 @@ Rationale: An accessible app broadens reach and improves overall UX quality.
 - Version control: Conventional Commits; small, reviewable PRs; changelog maintained.
 Rationale: Sustained velocity requires disciplined design and verification.
 
+#### Design Principles (SOLID)
+- Single-responsibility principle: A module/class should have one reason to change—one focused responsibility.
+- Open–closed principle: Modules are open for extension via composition/strategies but closed for modification of stable contracts.
+- Liskov substitution principle: Subtypes must be substitutable for their base types without breaking expectations.
+- Interface segregation principle: Prefer small, role-specific interfaces; clients should not depend on methods they don't use.
+- Dependency inversion principle: High-level policies depend on abstractions; inject dependencies via constructors/factories.
+
 ## Data Storage and Persistence
 - Storage model: local-only. Use an embedded database (e.g., SQLite with WAL) for metadata index (paths, EXIF/IPTC, tags, faces) and a content-addressable cache for thumbnails and previews.
 - Directory layout:
   - Library root contains user photos (unmodified unless user opts into managed imports).
-  - App data directory contains: `db/` (SQLite), `cache/thumbnails/` (LRU), `cache/previews/`, `logs/`.
 - Import/indexing:
   - Non-destructive: do not move/rename originals by default.
   - Incremental scan with mtime/hash change detection; store content hash to avoid duplicate work.
@@ -84,4 +101,4 @@ Rationale: Sustained velocity requires disciplined design and verification.
   - PATCH: clarifications and non-semantic edits.
 - Compliance reviews: All PRs MUST include a "Constitution Check" confirming privacy, performance, accessibility, and testing impacts. CI blocks merges on check failure.
 
-**Version**: 1.0.0 | **Ratified**: 2025-09-25 | **Last Amended**: 2025-09-25
+**Version**: 1.0.1 | **Ratified**: 2025-09-25 | **Last Amended**: 2025-09-26

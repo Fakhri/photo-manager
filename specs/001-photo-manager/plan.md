@@ -60,7 +60,6 @@ From the feature spec: A local-only web photo manager that organizes photos into
 Status: Initial Constitution Check → PASS
 
 ## Project Structure
-
 ### Documentation (this feature)
 ```
 specs/001-photo-manager/
@@ -71,7 +70,6 @@ specs/001-photo-manager/
 ├── contracts/           # Phase 1 output (/plan)
 └── tasks.md             # Phase 2 output (/tasks - NOT created by /plan)
 ```
-
 ### Source Code (repository root)
 ```
 frontend/
@@ -85,18 +83,69 @@ frontend/
 │   ├── pages/
 │   └── services/
 └── tests/
-```
 
 **Structure Decision**: DEFAULT to web app structure above; refine during Phase 1.
+
+## Design Principles, Patterns, and Algorithms
+
+### SOLID Principles
+- Single-responsibility principle: A class should have only one reason to change, meaning it should have only one job or responsibility.
+- Open–closed principle: Software entities should be open for extension but closed for modification.
+- Liskov substitution principle: Objects of a superclass should be replaceable with objects of a subclass without affecting the functionality.
+- Interface segregation principle: Clients should not be forced to depend on interfaces they do not use.
+- Dependency inversion principle: Depend on abstractions, not concretions.
+
+### Data Structures – Selection Guidelines
+- Collections
+  - Use `Array<T>` for ordered sequences and UI lists; prefer immutable updates for state.
+  - Use `Set<T>` for fast membership checks (e.g., multi-select of photo IDs).
+  - Use `Map<K,V>` for O(1) lookups by ID or composite keys (e.g., photoId -> metadata, albumId -> ordered photo IDs).
+  - Use `Readonly`/type-branded IDs (e.g., `PhotoId`, `AlbumId`) to avoid key mixups.
+- Indexing and Persistence
+  - IndexedDB object stores per entity (`photos`, `albums`, `tags`, `captions`, `thumbnails`).
+  - Secondary indexes for common queries: by `dateTaken`, by `albumId+position`, by `tag`, by `caption full-text token` (if implemented locally).
+  - Use content-addressable keys for thumbnails (hash of normalized image bytes + transformation parameters).
+- Caching
+  - LRU cache (memory) for decoded thumbnails/previews with size-bound by MB and entry count.
+  - Disk cache for thumbnails with periodic sweep; store a `lastAccessedAt` to support eviction.
+- Queues
+  - Bounded-concurrency work queue for indexing and thumbnail generation. Prefer a `PriorityQueue` to prioritize on-screen items.
+  - Use a simple deque for FIFO background tasks when priority is equal.
+- Algorithms
+  - Virtualized grid/windowing over arrays for UI lists to maintain ≤16ms frame budget.
+  - Stable sorts for user-facing orderings; diffing-based reordering for DnD (minimize DOM mutations).
+  - Binary search over date indexes for range filters; intersection of sorted lists for tag queries.
+  - Debounce and throttle for input and resize events; requestIdleCallback for low-priority work.
+
+### Design Patterns – Recommended Uses
+- Layered/Clean Architecture
+  - `ui/` depends on `services/` depends on `modules/*` depends on `storage/` adapters; cross-layer calls only downward.
+- Repository/Adapter
+  - Repositories abstract IndexedDB operations behind interfaces in `contracts/`; adapters for different storage backends if needed.
+- Strategy
+  - Pluggable strategies for thumbnail generation/decoding and EXIF parsing; select best available codec/library at runtime.
+- Command (with Undo/Redo)
+  - Model edits (add/remove from album, tag edits, caption edits) emitted as commands to enable undo/redo and history.
+- Observer / Pub-Sub
+  - Event bus for media indexing progress, cache updates, and selection changes; UI subscribes to render minimal diffs.
+- Facade
+  - Provide a thin `PhotoLibrary` API surface for UI pages/components, hiding module complexity.
+- State Machine
+  - Explicit UI mode handling (browsing, selecting, DnD, editing) to avoid boolean flag soup.
+
+### Best Practices
+- Apply SOLID consistently in `contracts/` and concrete implementations; DI through constructor-injected interfaces.
+- Favor immutability for view models and shallow structural sharing to minimize re-renders.
+- Keep pure, synchronous domain logic separate from async I/O boundaries; isolate side effects in services/adapters.
+- Validate inputs at module boundaries; prefer discriminated unions for result types over `null`/`undefined`.
+- Add unit tests for repositories, strategies, and command handlers; integration tests for workflows.
 
 ## Phase 0: Outline & Research
 1. Unknowns and decisions to research:
    - Choose EXIF parsing library with HEIC support and no network egress.
    - IndexedDB schema patterns for large collections and WAL-like batching (IDB transactions).
-   - Thumbnail cache sizing and eviction policies; content-addressable keys.
    - Browser support matrix (HEIC/WEBP, File System Access API fallback strategies).
    - Keyboard shortcut map and screen reader patterns for grids.
-2. Research tasks will produce decisions with rationale and alternatives.
 
 **Output**: research.md with all critical unknowns resolved or explicitly deferred.
 
