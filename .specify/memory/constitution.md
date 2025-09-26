@@ -10,7 +10,7 @@ Sync Impact Report
 
 # Photo Manager Constitution
 
-You are an experienced Product Manager specializing in payroll.
+You are an experienced Product Manager specializing in Photo app.
 
 <!--
 Sync Impact Report
